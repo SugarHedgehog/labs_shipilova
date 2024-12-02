@@ -24,6 +24,18 @@ function askQuestion(query, defaultValue, validate) {
 }
 
 async function main() {
+  const minProductionRate = parseFloat(await askQuestion(
+    'Введите минимальную производительность в минуту', 
+    2, 
+    (value) => !isNaN(value) && value > 0
+  ));
+
+  const maxProductionRate = parseFloat(await askQuestion(
+    'Введите максимальную производительность в минуту', 
+    3, 
+    (value) => !isNaN(value) && value > minProductionRate
+  ));
+
   const workersPerLine = parseInt(await askQuestion(
     'Введите количество людей на линии', 
     2, 
@@ -67,10 +79,10 @@ async function main() {
   ));
 
   const lines = [
-    new TechnologicalLine(2, 3, workersPerLine, shiftDurationMinutes),
-    new TechnologicalLine(2, 3, workersPerLine, shiftDurationMinutes),
-    new TechnologicalLine(2, 3, workersPerLine, shiftDurationMinutes),
-    new TechnologicalLine(2, 3, workersPerLine, shiftDurationMinutes)
+    new TechnologicalLine(minProductionRate, maxProductionRate, workersPerLine, shiftDurationMinutes),
+    new TechnologicalLine(minProductionRate, maxProductionRate, workersPerLine, shiftDurationMinutes),
+    new TechnologicalLine(minProductionRate, maxProductionRate, workersPerLine, shiftDurationMinutes),
+    new TechnologicalLine(minProductionRate, maxProductionRate, workersPerLine, shiftDurationMinutes)
   ];
   const workshop = new Workshop(lines);
 
