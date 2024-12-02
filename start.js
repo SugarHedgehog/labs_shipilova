@@ -1,4 +1,4 @@
-import { TechnologicalLine, Workshop, LaborPayment } from './technologicalLine';
+const { TechnologicalLine, Workshop, LaborPayment } = require('./technologicalLine');
 
 // Пример использования
 const workersPerLine = 2;// количество людей на линии
