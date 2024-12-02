@@ -1,22 +1,38 @@
 class TechnologicalLine {
-    constructor(minProductionRate, maxProductionRate, numberOfWorkers) {
-        this.productionRate = this.getRandomProductionRate(minProductionRate, maxProductionRate);
+    constructor(minProductionRate, maxProductionRate, numberOfWorkers, shiftDurationMinutes) {
+        this.productionRates = this.generateProductionRates(minProductionRate, maxProductionRate, shiftDurationMinutes);
         this.numberOfWorkers = numberOfWorkers; // количество человек на линии
     }
 
     // Метод для получения информации о линии
     getLineInfo() {
-        return `Производительность линии: ${this.productionRate}, Количество человек на линии: ${this.numberOfWorkers}`;
+        const averageProductionRate = this.calculateAverageProductionRate();
+        return `Средняя производительность линии: ${parseFloat(averageProductionRate.toFixed(2))},\nКоличество человек на линии: ${this.numberOfWorkers}`;
     }
 
-    // Метод для расчета общего выпуска за смену (в минутах)
-    calculateShiftOutput(shiftDurationMinutes) {
-        return this.productionRate * shiftDurationMinutes;
+    // Метод для расчета общего выпуска за смену
+    calculateShiftOutput() {
+        return this.productionRates.reduce((total, rate) => total + rate, 0);
+    }
+
+    // Метод для генерации массива производительности на каждую минуту смены
+    generateProductionRates(min, max, duration) {
+        const rates = [];
+        for (let i = 0; i < duration; i++) {
+            rates.push(this.getRandomProductionRate(min, max));
+        }
+        return rates;
     }
 
     // Метод для генерации случайной производительности в заданном диапазоне
     getRandomProductionRate(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Метод для расчета средней производительности
+    calculateAverageProductionRate() {
+        const totalProduction = this.calculateShiftOutput();
+        return totalProduction / this.productionRates.length;
     }
 }
 
@@ -26,10 +42,10 @@ class Workshop {
     }
 
     // Метод для расчета общего выпуска цеха за смену
-    calculateTotalShiftOutput(shiftDurationMinutes) {
+    calculateTotalShiftOutput() {
         let totalOutput = 0;
         this.lines.forEach(line => {
-            totalOutput += line.calculateShiftOutput(shiftDurationMinutes);
+            totalOutput += line.calculateShiftOutput();
         });
         return totalOutput;
     }
@@ -49,7 +65,7 @@ class Workshop {
     checkProductionPlan(targetOutput, shiftDurationMinutes) {
         const totalOutput = this.calculateTotalShiftOutput(shiftDurationMinutes);
         const difference = totalOutput - targetOutput;
-
+        console.log(`План выпуска: ${targetOutput} шт.`);
         if (difference > 0) {
             console.log(`План выпуска перевыполнен на ${difference} шт.`);
         } else if (difference < 0) {
@@ -57,6 +73,13 @@ class Workshop {
         } else {
             console.log('План выпуска выполнен точно.');
         }
+    }
+
+    // Новый метод для вывода информации о всех линиях
+    printAllLinesInfo() {
+        this.lines.forEach((line, index) => {
+            console.log(`Линия ${index + 1}: ${line.getLineInfo()}`);
+        });
     }
 }
 
@@ -66,15 +89,18 @@ const shiftDurationMinutes = 8 * 60; // 8 часов в минутах
 const targetOutput = 2880;
 
 const lines = [
-    new TechnologicalLine(2, 3, workersPerLine),
-    new TechnologicalLine(2, 3, workersPerLine),
-    new TechnologicalLine(2, 3, workersPerLine),
-    new TechnologicalLine(2, 3, workersPerLine)
+    new TechnologicalLine(2, 3, workersPerLine, shiftDurationMinutes),
+    new TechnologicalLine(2, 3, workersPerLine, shiftDurationMinutes),
+    new TechnologicalLine(2, 3, workersPerLine, shiftDurationMinutes),
+    new TechnologicalLine(2, 3, workersPerLine, shiftDurationMinutes)
 ];
 
 const workshop = new Workshop(lines);
 
-// Используем метод для вывода информации о выпуске
-workshop.printTotalShiftOutput(shiftDurationMinutes);
-// Используем метод для проверки выполнения плана
+// Вывода информации о выполнении плана
 workshop.checkProductionPlan(targetOutput, shiftDurationMinutes);
+// Вывода информации о выпуске
+workshop.printTotalShiftOutput(shiftDurationMinutes);
+// Вывода информации о цехе
+workshop.printAllLinesInfo();
+
