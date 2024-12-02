@@ -83,6 +83,61 @@ class Workshop {
     }
 }
 
+class LaborPayment extends Workshop {
+    constructor(lines, hourlyRate, bonusRate, extraBonusRate, costPerUnit) {
+        super(lines);
+        this.hourlyRate = hourlyRate; // почасовая оплата в рублях
+        this.bonusRate = bonusRate; // бонус за выполнение плана
+        this.extraBonusRate = extraBonusRate; // доплата за перевыполнение плана
+        this.costPerUnit = costPerUnit; // себестоимость одной покрышки в рублях
+    }
+
+    // Метод для расчета оплаты труда за смену
+    calculateLaborPayment(shiftDurationMinutes, targetOutput) {
+        const totalOutput = this.calculateTotalShiftOutput();
+        const hoursWorked = shiftDurationMinutes / 60;
+        let paymentPerWorker = this.hourlyRate * hoursWorked;
+
+        if (totalOutput >= targetOutput) {
+            // Выполнение плана
+            paymentPerWorker += paymentPerWorker * this.bonusRate;
+
+            if (totalOutput > targetOutput) {
+                // Перевыполнение плана
+                const extraProduction = totalOutput - targetOutput;
+                const extraPayment = extraProduction * this.costPerUnit * this.extraBonusRate;
+                paymentPerWorker += extraPayment / this.lines.length / this.lines[0].numberOfWorkers;
+            }
+        }
+
+        return paymentPerWorker;
+    }
+
+    // Метод для вывода информации об оплате труда
+    printLaborPayment(shiftDurationMinutes, targetOutput) {
+        const payment = this.calculateLaborPayment(shiftDurationMinutes, targetOutput);
+        console.log(`Начисленная оплата труда за смену на одного рабочего: ${payment.toFixed(2)} руб.`);
+    }
+
+    // Новый метод для расчета общей зарплаты всех рабочих в цехе
+    calculateTotalLaborPayment(shiftDurationMinutes, targetOutput) {
+        const paymentPerWorker = this.calculateLaborPayment(shiftDurationMinutes, targetOutput);
+        let totalWorkers = 0;
+
+        this.lines.forEach(line => {
+            totalWorkers += line.numberOfWorkers;
+        });
+
+        return paymentPerWorker * totalWorkers;
+    }
+
+    // Метод для вывода информации о зарплате всех рабочих
+    printTotalLaborPayment(shiftDurationMinutes, targetOutput) {
+        const totalPayment = this.calculateTotalLaborPayment(shiftDurationMinutes, targetOutput);
+        console.log(`Общая начисленная оплата труда за смену для всех рабочих: ${totalPayment.toFixed(2)} руб.`);
+    }
+}
+
 // Пример использования
 const workersPerLine = 2;//количество людей на линии
 const shiftDurationMinutes = 8 * 60; // 8 часов в минутах
@@ -94,7 +149,6 @@ const lines = [
     new TechnologicalLine(2, 3, workersPerLine, shiftDurationMinutes),
     new TechnologicalLine(2, 3, workersPerLine, shiftDurationMinutes)
 ];
-
 const workshop = new Workshop(lines);
 
 // Вывода информации о выполнении плана
@@ -104,3 +158,14 @@ workshop.printTotalShiftOutput(shiftDurationMinutes);
 // Вывода информации о цехе
 workshop.printAllLinesInfo();
 
+const hourlyRate = 335; // почасовая оплата в рублях
+const bonusRate = 0.17; // бонус за выполнение плана
+const extraBonusRate = 0.215; // доплата за перевыполнение плана
+const costPerUnit = 726; // себестоимость одной покрышки в рублях
+
+const laborPaymentWorkshop = new LaborPayment(lines, hourlyRate, bonusRate, extraBonusRate, costPerUnit);
+
+// Вывод информации об оплате труда
+laborPaymentWorkshop.printLaborPayment(shiftDurationMinutes, targetOutput);
+// Вывод информации о зарплате всех рабочих
+laborPaymentWorkshop.printTotalLaborPayment(shiftDurationMinutes, targetOutput);
